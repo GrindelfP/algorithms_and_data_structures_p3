@@ -1,0 +1,1 @@
+CMakeLists.txt not found in /Users/grindelf/Programming/3-HYDRA/2026-1/6-strucutres-algorithms-data-processing/tasks01 Select CMakeLists.txt
