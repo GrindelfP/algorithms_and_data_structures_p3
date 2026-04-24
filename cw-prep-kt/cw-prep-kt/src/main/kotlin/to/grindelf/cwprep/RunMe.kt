@@ -7,7 +7,7 @@ private val LOG = (log2(10_000.0) + 2).toInt()
 
 fun main() {
     task01()
-    task02()
+    // task02()
 }
 
 fun task01() {
@@ -86,13 +86,13 @@ class Tree {
         var u = a
         var v = b
 
-        var diff = u.depth - v.depth
-        if (diff < 0) {
-            val tmp = u; u = v; v = tmp; diff = -diff
+        var depthDiff = u.depth - v.depth
+        if (depthDiff < 0) {
+            val tmp = u; u = v; v = tmp; depthDiff = -depthDiff
         }
 
         for (k in 0 until LOG) {
-            if (diff shr k and 1 == 1) u = u.parents[k]!!
+            if (depthDiff shr k and 1 == 1) u = u.parents[k]!!
         }
 
         if (u === v) return u
