@@ -42,40 +42,42 @@ fun task02() {
 class Node(val name: Char) {
     val children: MutableMap<Char, Node> = mutableMapOf()
     var depth: Int = 0
-    val up: Array<Node?> = arrayOfNulls(LOG)
+    val parents: Array<Node?> = arrayOfNulls(LOG)
 }
 
 class Tree {
     val root = Node('/')
-    private val allNodes = mutableListOf<Node>()
 
     fun addPath(path: String) {
         var current = root
         for (ch in path.drop(1)) {
             if (ch == '/') continue
-            current = current.children.getOrPut(ch) {
-                Node(ch).also { it.depth = current.depth + 1 }
-            }
+            current = current.children.getOrPut(ch) { Node(ch) }
+        }
+    }
+
+    private fun dfs(action: (node: Node, parent: Node?) -> Unit) {
+        val stack = ArrayDeque<Pair<Node, Node?>>()
+        stack.addLast(root to null)
+        while (stack.isNotEmpty()) {
+            val (node, parent) = stack.removeLast()
+            action(node, parent)
+            for (child in node.children.values) stack.addLast(child to node)
         }
     }
 
     fun prepareForLca() {
-        allNodes.clear()
+        val visited = mutableListOf<Node>()
 
-        val stack = ArrayDeque<Pair<Node, Node?>>()
-        stack.addLast(root to null)
-
-        while (stack.isNotEmpty()) {
-            val (node, parent) = stack.removeLast()
-            allNodes.add(node)
+        dfs { node, parent ->
+            visited.add(node)
             node.depth = if (parent == null) 0 else parent.depth + 1
-            node.up[0] = parent ?: root
-            for (child in node.children.values) stack.addLast(child to node)
+            node.parents[0] = parent ?: root
         }
 
         for (k in 1 until LOG) {
-            for (node in allNodes) {
-                node.up[k] = node.up[k - 1]!!.up[k - 1]
+            for (node in visited) {
+                node.parents[k] = node.parents[k - 1]!!.parents[k - 1]
             }
         }
     }
@@ -85,22 +87,24 @@ class Tree {
         var v = b
 
         var diff = u.depth - v.depth
-        if (diff < 0) { val tmp = u; u = v; v = tmp; diff = -diff }
+        if (diff < 0) {
+            val tmp = u; u = v; v = tmp; diff = -diff
+        }
 
         for (k in 0 until LOG) {
-            if (diff shr k and 1 == 1) u = u.up[k]!!
+            if (diff shr k and 1 == 1) u = u.parents[k]!!
         }
 
         if (u === v) return u
 
         for (k in LOG - 1 downTo 0) {
-            if (u.up[k] !== v.up[k]) {
-                u = u.up[k]!!
-                v = v.up[k]!!
+            if (u.parents[k] !== v.parents[k]) {
+                u = u.parents[k]!!
+                v = v.parents[k]!!
             }
         }
 
-        return u.up[0]!!
+        return u.parents[0]!!
     }
 
     private fun dist(a: Node, b: Node): Int {
@@ -109,8 +113,12 @@ class Tree {
     }
 
     fun minMaxDistance(nameA: Char, nameB: Char): String {
-        val nodesA = allNodes.filter { it.name == nameA }
-        val nodesB = allNodes.filter { it.name == nameB }
+        val nodesA = mutableListOf<Node>()
+        val nodesB = mutableListOf<Node>()
+        dfs { node, _ ->
+            if (node.name == nameA) nodesA.add(node)
+            if (node.name == nameB) nodesB.add(node)
+        }
 
         var minD = Int.MAX_VALUE
         var maxD = Int.MIN_VALUE
