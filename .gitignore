@@ -5,4 +5,7 @@ target
 simplewiki*
 engwiki-ascii-20260201_1gb.txt
 *.jar
+bench
+list
+sort_demo
 
