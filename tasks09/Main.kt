@@ -123,7 +123,7 @@ fun main() {
     // Генерация массива — повторяем логику C++ теста:
     // Poisson(4) + 40, cap 53, seed=1
     val rng = Random(1)
-    val n = 20
+    val n = 50
     val v = List(n) {
         val raw = 40 + generatePoisson(4.0, rng)
         min(raw, 53)
